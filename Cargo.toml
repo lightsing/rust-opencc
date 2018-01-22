@@ -1,0 +1,6 @@
+[package]
+name = "rust-opencc"
+version = "0.1.0"
+authors = ["lightsing <light.tsing@gmail.com>"]
+
+[dependencies]
