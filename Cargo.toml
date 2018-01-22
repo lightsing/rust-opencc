@@ -1,5 +1,5 @@
 [package]
-name = "rust-opencc"
+name = "opencc"
 version = "0.1.0"
 authors = ["lightsing <light.tsing@gmail.com>"]
 
