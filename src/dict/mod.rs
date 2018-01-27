@@ -1,5 +1,6 @@
 extern crate qptrie;
 
+use std::str;
 use std::ops::{Deref, DerefMut};
 use self::qptrie::Trie;
 
@@ -49,12 +50,30 @@ impl Dict {
         self
     }
 
+    pub fn replace_all(&self, text: &str) -> String {
+        let mut output = String::with_capacity(text.len());
+        let mut text: &[u8] = text.as_ref();
+        while !text.is_empty() {
+            match self.prefix_match(&text) {
+                Some((prefix, value)) => {
+                    output.push_str(str::from_utf8(value).unwrap());
+                    text = &text[prefix.len()..];
+                },
+                None => {
+                    let mut chars = str::from_utf8(text).unwrap().chars();
+                    output.push(chars.next().unwrap());
+                    text = chars.as_str().as_ref();
+                }
+            }
+        }
+        output
+    }
 }
 
 
 #[test]
 fn test_prefix_match() {
-    let mut dict = Dict(Trie::new());
+    let mut dict = Dict::new();
     dict.load("
 A a'
 B b'
@@ -69,4 +88,19 @@ BB bb'");
     assert_eq!(Some((b"ABCD".as_ref(), b"abcd'".as_ref())), dict.prefix_match(b"ABCDEFG"));
     assert_eq!(None, dict.prefix_match(b"X"));
     assert_eq!(None, dict.prefix_match(b"DD"));
+}
+
+#[test]
+fn test_dict_simple() {
+    let mut dict = Dict::new();
+    dict.load("
+A a
+B b
+ABC xxx
+'");
+    assert_eq!("a", dict.replace_all("A"));
+    assert_eq!("ab", dict.replace_all("AB"));
+    assert_eq!("xxx", dict.replace_all("ABC"));
+    assert_eq!("abxxxa", dict.replace_all("ABABCA"));
+    assert_eq!("aXbXab", dict.replace_all("AXBXAB"));
 }
