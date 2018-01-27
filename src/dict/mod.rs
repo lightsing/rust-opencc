@@ -22,11 +22,11 @@ impl DerefMut for Dict {
 impl Dict {
     fn prefix_match<'a, 'b>(&'a self, query: &'b [u8]) -> Option<(&'b [u8], &'a [u8])> {
         let mut text = query;
-        while text.len() > 2 {
+        while !text.is_empty() {
             let text_vec = text.to_vec();
             match self.get(&text_vec) {
                 Some(target) => return Some((text, target)),
-                None => text = &text[..text.len()-2]
+                None => text = &text[..text.len()-1]
             }
         }
         return None
@@ -49,4 +49,24 @@ impl Dict {
         self
     }
 
+}
+
+
+#[test]
+fn test_prefix_match() {
+    let mut dict = Dict(Trie::new());
+    dict.load("
+A a'
+B b'
+C c'
+ABC abc'
+ABCD abcd'
+DDD ddd'
+BB bb'");
+    assert_eq!(Some((b"A".as_ref(), b"a'".as_ref())), dict.prefix_match(b"A"));
+    assert_eq!(Some((b"B".as_ref(), b"b'".as_ref())), dict.prefix_match(b"BXX"));
+    assert_eq!(Some((b"ABC".as_ref(), b"abc'".as_ref())), dict.prefix_match(b"ABCX"));
+    assert_eq!(Some((b"ABCD".as_ref(), b"abcd'".as_ref())), dict.prefix_match(b"ABCDEFG"));
+    assert_eq!(None, dict.prefix_match(b"X"));
+    assert_eq!(None, dict.prefix_match(b"DD"));
 }
