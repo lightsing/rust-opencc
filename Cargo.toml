@@ -4,3 +4,4 @@ version = "0.1.0"
 authors = ["lightsing <light.tsing@gmail.com>"]
 
 [dependencies]
+qptrie = { git = "https://github.com/jedisct1/rust-qptrie.git" }
