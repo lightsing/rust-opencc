@@ -10,9 +10,6 @@ pub struct Dict{
     max_key: Cell<usize>
 }
 
-const RAW_DICT_ST: &'static str = include_str!("st.txt");
-const RAW_DICT_TS: &'static str = include_str!("ts.txt");
-
 impl Deref for Dict {
     type Target = Trie<Vec<u8>, Vec<u8>>;
 
@@ -80,7 +77,13 @@ impl Dict {
 
 #[cfg(test)]
 mod tests {
+    extern crate test;
+
     use super::*;
+    use self::test::Bencher;
+
+    const RAW_DICT_ST: &'static str = include_str!("st.txt");
+    const RAW_DICT_TS: &'static str = include_str!("ts.txt");
 
     #[test]
     fn test_prefix_match() {
@@ -162,4 +165,8 @@ ABC xxx
         assert_eq!(tc, dict.replace_all(sc));
     }
 
+    #[bench]
+    fn dict_st_bench(b: &mut Bencher) {
+        b.iter(|| test_dict_st())
+    }
 }
