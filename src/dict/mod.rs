@@ -1,10 +1,14 @@
 extern crate qptrie;
 
 use std::str;
+use std::cell::Cell;
 use std::ops::{Deref, DerefMut};
 use self::qptrie::Trie;
 
-pub struct Dict(Trie<Vec<u8>, Vec<u8>>);
+pub struct Dict{
+    dict: Trie<Vec<u8>, Vec<u8>>,
+    max_key: Cell<usize>
+}
 
 const RAW_DICT_ST: &'static str = include_str!("st.txt");
 const RAW_DICT_TS: &'static str = include_str!("ts.txt");
@@ -13,13 +17,13 @@ impl Deref for Dict {
     type Target = Trie<Vec<u8>, Vec<u8>>;
 
     fn deref(&self) -> &Self::Target {
-        &self.0
+        &self.dict
     }
 }
 
 impl DerefMut for Dict {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
+        &mut self.dict
     }
 }
 
@@ -39,7 +43,7 @@ impl Dict {
 
 impl Dict {
     pub fn new() -> Self {
-        Dict(Trie::new())
+        Dict{ dict: Trie::new(), max_key: Cell::new(0) }
     }
 
     pub fn load(&mut self, raw: &str) -> &mut Self{
@@ -48,6 +52,7 @@ impl Dict {
             let mut cols = line.splitn(2, ' ');
             Some((cols.next()?, cols.next()?))
         }) {
+            if key.len() > self.max_key.get() { self.max_key.set(key.len()) };
             self.insert(key.to_string().into_bytes(), value.to_string().into_bytes());
         }
         self
@@ -57,7 +62,7 @@ impl Dict {
         let mut output = String::with_capacity(text.len());
         let mut text: &[u8] = text.as_ref();
         while !text.is_empty() {
-            match self.prefix_match(&text) {
+            match self.prefix_match(&text[..if text.len() > self.max_key.get() { self.max_key.get() } else { text.len() }]) {
                 Some((prefix, value)) => {
                     output.push_str(str::from_utf8(value).unwrap());
                     text = &text[prefix.len()..];
