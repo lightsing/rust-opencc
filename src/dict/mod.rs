@@ -77,10 +77,8 @@ impl Dict {
 
 #[cfg(test)]
 mod tests {
-    extern crate test;
 
     use super::*;
-    use self::test::Bencher;
 
     const RAW_DICT_ST: &'static str = include_str!("st.txt");
     const RAW_DICT_TS: &'static str = include_str!("ts.txt");
@@ -163,10 +161,5 @@ ABC xxx
         鮎魚和鮎魚是一種生物。
         金胄不是金色的甲冑。";
         assert_eq!(tc, dict.replace_all(sc));
-    }
-
-    #[bench]
-    fn dict_st_bench(b: &mut Bencher) {
-        b.iter(|| test_dict_st())
-    }
+    }   
 }
